@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ระบบถอยจอดอัตโนมัติในรถยนต์ไฟฟ้า</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- ฟอนต์ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-alt: #020617;
+      --card: #111827;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56,189,248,0.18);
+      --text: #e5e7eb;
+      --text-soft: #9ca3af;
+      --border: #1f2937;
+      --danger: #f97373;
+      --success: #4ade80;
+      --warning: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Prompt", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 45%, #000 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* ===== Header / Layout ===== */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(to bottom, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-logo {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-links a {
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      color: var(--text-soft);
+      transition: all 0.15s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+      background: rgba(15,23,42,0.9);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem 1.25rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    section {
+      border-radius: 1.25rem;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(15,23,42,0.88));
+      padding: 1.5rem 1.25rem 1.6rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: baseline;
+    }
+
+    .section-header h2 {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .section-header span {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    /* ===== Hero ===== */
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.5fr);
+      gap: 1.75rem;
+      margin-top: 0.75rem;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(1.9rem, 3.1vw, 2.5rem);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      max-width: 34rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 0.55rem 1.15rem;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: none;
+      color: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      border-color: transparent;
+      color: #0b1220;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.07);
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      border-color: var(--border);
+      color: var(--text-soft);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .hero-taglist {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .hero-tag {
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px dashed var(--border);
+    }
+
+    .hero-card {
+      background: radial-gradient(circle at top, #1d283a 0, #020617 55%);
+      border-radius: 1.25rem;
+      border: 1px solid var(--border);
+      padding: 1.1rem 1.1rem 1.3rem;
+      box-shadow: 0 22px 45px rgba(0,0,0,0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    .hero-card-chip {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.8);
+      border: 1px solid var(--border);
+      color: var(--text-soft);
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .hero-card-chip span {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+    }
+
+    .car-layout {
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.7rem;
+      background: radial-gradient(circle at top, rgba(56,189,248,0.12), rgba(15,23,42,0.9));
+    }
+
+    .car-top {
+      position: relative;
+      height: 130px;
+      border-radius: 0.9rem;
+      border: 1px solid var(--border);
+      background: linear-gradient(145deg, #020617, #111827);
+      overflow: hidden;
+    }
+
+    .car-body {
+      position: absolute;
+      inset: 16px 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: radial-gradient(circle at top, rgba(148,163,184,0.6), rgba(15,23,42,0.9));
+      box-shadow: 0 0 25px rgba(56,189,248,0.4);
+    }
+
+    .car-sensor {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(56,189,248,0.9);
+    }
+
+    .sensor-front { top: 10px; left: 50%; transform: translateX(-50%); }
+    .sensor-back { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .sensor-left { left: 7px; top: 50%; transform: translateY(-50%); }
+    .sensor-right { right: 7px; top: 50%; transform: translateY(-50%); }
+
+    .car-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .car-info-item {
+      border-radius: 0.6rem;
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.55rem;
+      background: rgba(15,23,42,0.9);
+    }
+
+    .car-info-label { color: var(--text-soft); margin-bottom: 0.1rem; }
+    .car-info-value { font-weight: 500; }
+
+    /* ===== Utilities ===== */
+
+    .grid { display: grid; gap: 0.9rem; }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .card {
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      padding: 0.85rem 0.95rem;
+      background: radial-gradient(circle at top left, rgba(56,189,248,0.07), rgba(15,23,42,0.97));
+      font-size: 0.9rem;
+    }
+
+    .card h3 { font-size: 0.95rem; margin-bottom: 0.45rem; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.5);
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      margin-bottom: 0.25rem;
+    }
+
+    ul { padding-left: 1.1rem; margin-top: 0.15rem; }
+    li { margin-bottom: 0.2rem; }
+
+    /* ===== Workflow Steps ===== */
+
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 0.65rem;
+      font-size: 0.9rem;
+    }
+
+    .step {
+      position: relative;
+      padding-left: 2.05rem;
+      transition: background 0.2s ease, transform 0.2s ease, border 0.2s ease;
+      border-radius: 0.9rem;
+      padding-top: 0.3rem;
+      padding-bottom: 0.3rem;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      width: 1.45rem;
+      height: 1.45rem;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: rgba(15,23,42,0.95);
+      transition: all 0.2s ease;
+    }
+
+    .step small {
+      color: var(--text-soft);
+      display: block;
+      margin-top: 0.1rem;
+      font-size: 0.78rem;
+    }
+
+    .step.active {
+      background: rgba(56,189,248,0.07);
+      border: 1px solid rgba(56,189,248,0.5);
+      transform: translateX(3px);
+    }
+
+    .step.active::before {
+      background: var(--accent);
+      color: #0b1220;
+      box-shadow: 0 0 12px rgba(56,189,248,0.9);
+    }
+
+    /* ===== Flowchart ===== */
+
+    .flowchart { display: grid; gap: 1rem; }
+    .flow-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      align-items: center;
+    }
+    .node {
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.7rem;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.95);
+      font-size: 0.8rem;
+      min-width: 150px;
+    }
+    .node.start, .node.end {
+      border-radius: 999px;
+      border-color: var(--accent);
+    }
+    .node.decision {
+      border-style: dashed;
+      border-color: var(--warning);
+    }
+    .node-label {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.1rem;
+    }
+    .arrow {
+      font-size: 1.1rem;
+      color: var(--accent);
+      min-width: 25px;
+      text-align: center;
+    }
+    .branch {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-left: 2.2rem;
+      padding-left: 0.8rem;
+      border-left: 1px dashed rgba(148,163,184,0.5);
+    }
+    .branch-label {
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      margin-bottom: -0.25rem;
+    }
+
+    .legend {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .legend-box {
+      width: 14px;
+      height: 14px;
+      border-radius: 0.4rem;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.95);
+    }
+    .legend-box.decision {
+      border-style: dashed;
+      border-color: var(--warning);
+    }
+    .legend-box.startend {
+      border-radius: 999px;
+      border-color: var(--accent);
+    }
+
+    /* ===== Simulation Section – ช่องจอดเอียง ===== */
+
+    .sim-container {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    .sim-scene-card {
+      border-radius: 1.1rem;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      box-shadow: 0 22px 45px rgba(0,0,0,0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      margin-bottom: 0.7rem;
+      color: var(--text-soft);
+    }
+
+    .sim-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid var(--border);
+    }
+
+    .sim-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 10px rgba(74,222,128,0.9);
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-outline {
+      border-color: var(--border);
+      color: var(--text-soft);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sim-scene {
+      position: relative;
+      border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: radial-gradient(circle at top, rgba(15,23,42,1) 0, #020617 55%);
+      height: 260px;
+      overflow: hidden;
+      padding: 10px 14px;
+    }
+
+    /* ถนนด้านบน */
+    .lane-top {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 40px;
+      height: 70px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #111827 0, #020617 100%);
+      box-shadow: inset 0 0 18px rgba(15,23,42,0.9);
+      border: 1px solid rgba(31,41,55,0.9);
+    }
+
+    .lane-center-line {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      top: 75px;
+      border-top: 1px dashed rgba(148,163,184,0.5);
+    }
+
+    /* เส้นแถวช่องจอดด้านล่าง */
+    .parking-baseline {
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      bottom: 40px;
+      border-top: 3px solid rgba(148,163,184,0.4);
+    }
+
+    /* ช่องจอดเอียง */
+    .slot-angle {
+      position: absolute;
+      width: 80px;
+      height: 130px;
+      border-radius: 16px;
+      border: 1px solid rgba(55,65,81,0.9);
+      background: linear-gradient(145deg, rgba(15,23,42,0.9), rgba(15,23,42,0.4));
+      box-shadow: inset 0 0 15px rgba(15,23,42,1);
+      transform: rotate(-35deg);
+      transform-origin: center center;
+      bottom: -24px;
+    }
+
+    .slot-a1 { left: 16%; }
+    .slot-a2 { left: 33%; }
+    .slot-a3 { left: 50%; }
+    .slot-a4 { left: 67%; }
+
+    .slot-target {
+      border-color: var(--accent);
+      box-shadow: 0 0 18px rgba(56,189,248,0.9);
+    }
+
+    .slot-label {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%) rotate(35deg);
+      font-size: 0.7rem;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    /* รถที่จอดอยู่แล้ว */
+    .other-car {
+      position: absolute;
+      width: 52px;
+      height: 110px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #020617, #111827);
+      border: 1px solid rgba(75,85,99,0.9);
+      box-shadow: 0 10px 22px rgba(0,0,0,0.55);
+      transform: rotate(-35deg);
+      transform-origin: center center;
+      bottom: -10px;
+    }
+
+    .other-car-1 { left: 18%; }
+    .other-car-2 { left: 35%; }
+    .other-car-3 { left: 69%; }
+
+    /* รถ EV ของเรา – วิ่งบนเลนด้านบน แล้วเลี้ยวลง */
+    .ev-car {
+      position: absolute;
+      width: 54px;
+      height: 110px;
+      border-radius: 18px;
+      background: linear-gradient(160deg, #0ea5e9, #22c55e);
+      box-shadow: 0 14px 32px rgba(34,197,94,0.8);
+      border: 1px solid rgba(56,189,248,0.9);
+      transform-origin: center center;
+      left: 18%;
+      top: 78px;
+      transform: translate(-50%, -50%) rotate(0deg);
+      z-index: 5;
+    }
+
+    .ev-window {
+      position: absolute;
+      inset: 16px 8px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.2), rgba(15,23,42,0.95));
+      border: 1px solid rgba(15,23,42,0.8);
+    }
+
+    .ev-sensor-dot {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #e5e7eb;
+      box-shadow: 0 0 8px rgba(226,232,240,0.9);
+    }
+    .ev-s-front { top: 4px; left: 50%; transform: translateX(-50%); }
+    .ev-s-back { bottom: 4px; left: 50%; transform: translateX(-50%); }
+    .ev-s-left { left: 2px; top: 50%; transform: translateY(-50%); }
+    .ev-s-right { right: 2px; top: 50%; transform: translateY(-50%); }
+
+    /* path รถเลี้ยวเข้าซอง */
+    .sim-scene.running .ev-car {
+      animation: parkPath 11s ease-in-out forwards;
+    }
+
+    @keyframes parkPath {
+      0% {
+        left: 18%;
+        top: 78px;
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+      35% {
+        left: 58%;
+        top: 78px;
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+      70% {
+        left: 64%;
+        top: 150px;
+        transform: translate(-50%, -50%) rotate(-35deg);
+      }
+      100% {
+        left: 64%;
+        top: 165px;
+        transform: translate(-50%, -50%) rotate(-35deg);
+      }
+    }
+
+    .sim-meta {
+      margin-top: 0.7rem;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.55rem;
+      font-size: 0.78rem;
+    }
+
+    .sim-meta-item {
+      border-radius: 0.7rem;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.55rem;
+      background: rgba(15,23,42,0.96);
+    }
+
+    .sim-meta-label { color: var(--text-soft); font-size: 0.75rem; }
+    .sim-meta-value { font-weight: 500; }
+
+    .sim-note {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-top: 0.45rem;
+    }
+
+    /* Sidebar ซ้ายของ Simulation */
+
+    .sim-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      font-size: 0.88rem;
+    }
+
+    .sim-badge {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+    }
+
+    .sim-step-label {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 0.3rem;
+    }
+
+    .sim-flow-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.1rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      font-size: 0.75rem;
+      color: var(--text-soft);
+    }
+
+    .sim-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .sim-log {
+      border-radius: 0.9rem;
+      border: 1px solid var(--border);
+      padding: 0.7rem 0.75rem;
+      background: rgba(15,23,42,0.96);
+      max-height: 135px;
+      overflow: hidden;
+    }
+
+    .sim-log-line {
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-bottom: 0.25rem;
+      opacity: 0.35;
+      transition: opacity 0.2s ease;
+    }
+
+    .sim-log-line.active {
+      opacity: 1;
+      color: var(--accent);
+    }
+
+    /* ===== Footer & Responsive ===== */
+
+    footer {
+      max-width: 1100px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1.25rem;
+      font-size: 0.75rem;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .hero-card { order: -1; }
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sim-container {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav { flex-direction: column; align-items: flex-start; }
+      main { padding-inline: 1rem; }
+      section { padding-inline: 1rem; }
+      .grid-3, .grid-2 { grid-template-columns: minmax(0, 1fr); }
+      .sim-meta { grid-template-columns: minmax(0, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="nav-title">
+      <div class="nav-logo">EV</div>
+      ระบบถอยจอดอัตโนมัติในรถยนต์ไฟฟ้า
+    </div>
+    <nav class="nav-links">
+      <a href="#overview">ภาพรวม</a>
+      <a href="#components">องค์ประกอบ</a>
+      <a href="#workflow">ขั้นตอนทำงาน</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#flowchart">Flow Chart</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- Hero -->
+  <section class="hero" id="overview">
+    <div>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        EV Smart Parking · Student Project
+      </div>
+      <h1>ระบบถอยจอดอัตโนมัติ<br>สำหรับรถยนต์ไฟฟ้า</h1>
+      <p>
+        โปรเจคนี้ออกแบบระบบช่วยถอยจอดอัตโนมัติในรถยนต์ไฟฟ้า
+        โดยใช้เซนเซอร์รอบคันและสมองกลกลาง (ECU/Controller)
+        ในการตรวจจับช่องจอด คำนวณเส้นทางถอย และสั่งงานมอเตอร์ขับเคลื่อน
+        มอเตอร์พวงมาลัย และเบรกให้จอดอย่างปลอดภัย
+      </p>
+
+      <div class="hero-actions">
+        <a href="#simulation" class="btn btn-primary">
+          ทดลอง Simulation การถอยจอด
+        </a>
+        <a href="#components" class="btn btn-ghost">
+          ดูโครงสร้างฮาร์ดแวร์
+        </a>
+      </div>
+
+      <div class="hero-taglist">
+        <div class="hero-tag">Ultrasonic / Camera Sensor</div>
+        <div class="hero-tag">Trajectory Planning</div>
+        <div class="hero-tag">Closed-loop Control</div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hero-card-header">
+        <div class="hero-card-chip">
+          <span></span> Auto Parking – Active
+        </div>
+        <small style="color:var(--text-soft);">Top view layout (concept)</small>
+      </div>
+      <div class="car-layout">
+        <div class="car-top">
+          <div class="car-body"></div>
+          <div class="car-sensor sensor-front"></div>
+          <div class="car-sensor sensor-back"></div>
+          <div class="car-sensor sensor-left"></div>
+          <div class="car-sensor sensor-right"></div>
+        </div>
+
+        <div class="car-info-grid">
+          <div class="car-info-item">
+            <div class="car-info-label">โหมด</div>
+            <div class="car-info-value">ถอยจอดอัตโนมัติ</div>
+          </div>
+          <div class="car-info-item">
+            <div class="car-info-label">ความเร็วถอย</div>
+            <div class="car-info-value">ต่ำ &lt; 7 km/h</div>
+          </div>
+          <div class="car-info-item">
+            <div class="car-info-label">จำนวนเซนเซอร์</div>
+            <div class="car-info-value">4–8 จุด รอบคัน</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components -->
+  <section id="components">
+    <div class="section-header">
+      <h2>องค์ประกอบหลักของระบบ</h2>
+      <span>ลิงก์ตรงกับฮาร์ดแวร์ที่จะใช้ในโปรเจค</span>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="pill">Sensor Layer</div>
+        <h3>ชุดเซนเซอร์รอบคัน</h3>
+        <ul>
+          <li>Ultrasonic ด้านหน้า / หลัง / ซ้าย / ขวา</li>
+          <li>Camera หรือ Radar (หากมี)</li>
+          <li>Steering Angle Sensor – มุมพวงมาลัย</li>
+          <li>Wheel Speed / Encoder – ระยะการเคลื่อนที่</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="pill">Control Layer</div>
+        <h3>ECU / Parking Controller</h3>
+        <ul>
+          <li>อ่านค่าจากเซนเซอร์ทั้งหมดแบบเรียลไทม์</li>
+          <li>ตรวจหาช่องจอดว่างด้านข้าง</li>
+          <li>คำนวณเส้นทางถอยจอด (Parking Trajectory)</li>
+          <li>ตัดสินใจเลี้ยวซ้าย/ขวา/หยุด ตามเงื่อนไขความปลอดภัย</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="pill">Actuator Layer</div>
+        <h3>ชุดมอเตอร์และเบรก</h3>
+        <ul>
+          <li>Traction Motor – ควบคุมความเร็วถอยหลัง</li>
+          <li>Steering Motor – หมุนพวงมาลัยอัตโนมัติ</li>
+          <li>Brake System – หยุด/ชะลอเมื่อเข้าใกล้สิ่งกีดขวาง</li>
+          <li>Gear Control – สลับโหมด D / R / P (ตามการออกแบบ)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="pill">Human Interface</div>
+        <h3>จอแสดงผล & การแจ้งเตือน</h3>
+        <ul>
+          <li>ปุ่มเลือก “โหมดถอยจอดอัตโนมัติ”</li>
+          <li>แสดงสถานะการค้นหาช่องจอด / กำลังถอย / จอดสำเร็จ</li>
+          <li>เสียงเตือนเมื่อระยะใกล้เกินค่าที่กำหนด</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="pill">Safety</div>
+        <h3>กลไกความปลอดภัย</h3>
+        <ul>
+          <li>หยุดระบบทันทีเมื่อผู้ขับแตะเบรก</li>
+          <li>จำกัดความเร็วสูงสุดระหว่างถอย</li>
+          <li>โหมดยกเลิก (Override) ให้ผู้ขับควบคุมเองได้ทันที</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="pill">Data & Log</div>
+        <h3>บันทึกข้อมูลการถอยจอด</h3>
+        <ul>
+          <li>ระยะจากสิ่งกีดขวางในแต่ละเวลา</li>
+          <li>มุมพวงมาลัย และตำแหน่งรถ</li>
+          <li>ใช้วิเคราะห์ปรับปรุงอัลกอริทึมในอนาคต</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section id="workflow">
+    <div class="section-header">
+      <h2>ลำดับขั้นตอนการทำงานของระบบถอยจอด</h2>
+      <span>ผูกภาพ Simulation เข้ากับการอ่านเซนเซอร์และสั่งงาน ECU</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div>
+        <div class="steps" id="workflow-steps">
+          <div class="step">
+            ผู้ขับเลือก <strong>โหมดถอยจอดอัตโนมัติ</strong>
+            <small>ระบบตรวจสอบว่าตำแหน่งรถและความเร็วอยู่ในช่วงที่อนุญาต</small>
+          </div>
+          <div class="step">
+            ECU อ่านค่าจาก <strong>เซนเซอร์ด้านข้าง</strong> เพื่อค้นหา “ช่องจอดว่าง”
+            <small>Ultrasonic / Camera ตรวจระยะห่างจากรถที่จอดอยู่</small>
+          </div>
+          <div class="step">
+            เมื่อพบช่องจอด ระบบคำนวณ <strong>เส้นทางถอย (Parking Trajectory)</strong>
+            <small>กำหนดมุมเลี้ยว จุดเริ่มหมุน และจุดหยุด</small>
+          </div>
+          <div class="step">
+            ECU สั่งงาน <strong>มอเตอร์ขับเคลื่อนให้ถอยหลังช้า ๆ</strong> และสั่ง
+            <strong>Steering Motor หมุนพวงมาลัย</strong> ตามแผน
+            <small>ช่วงที่เห็นใน Simulation รถเลี้ยวลงไปยังช่องจอดเอียง</small>
+          </div>
+          <div class="step">
+            ระหว่างถอย เซนเซอร์ด้านข้างและด้านหลังทำงานตลอดเวลา
+            <small>Feedback Loop: Sensor → ECU → ปรับมอเตอร์ / พวงมาลัย</small>
+          </div>
+          <div class="step">
+            หากระยะใกล้เกินกำหนด ECU สั่ง <strong>เบรกฉุกเฉิน หรือหยุดชั่วคราว</strong>
+            <small>ป้องกันการชนกำแพงหรือรถคันอื่น</small>
+          </div>
+          <div class="step">
+            เมื่อรถเข้าอยู่ในตำแหน่งที่เหมาะสม ระบบสั่ง <strong>หยุดรถ / เข้าเกียร์ P</strong>
+            <small>แจ้งผู้ขับด้วยเสียงเตือนหรือข้อความ “Parking Complete”</small>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="height:100%;">
+          <h3 style="margin-bottom:0.4rem;">ตัวอย่างช่วง “รถเลี้ยวลงช่องเอียง”</h3>
+          <p style="font-size:0.9rem; color:var(--text-soft);">
+            ตอนที่ Simulation แสดงรถวิ่งบนเลนด้านบนแล้วเลี้ยวลงตามช่องจอดเอียง
+            สามารถอธิบายได้ว่า:
+          </p>
+          <ul style="margin-top:0.45rem; font-size:0.88rem;">
+            <li><strong>Sensor ด้านขวา/ด้านล่าง</strong> ตรวจระยะระหว่างรถเราและรถที่จอดอยู่แล้ว</li>
+            <li><strong>ECU</strong> เปรียบเทียบระยะที่วัดได้กับเส้นทางเป้าหมาย</li>
+            <li>ถ้าระยะด้านข้างน้อยเกินไป ECU จะสั่งให้ <strong>ลดมุมเลี้ยวหรือชะลอ</strong></li>
+            <li>หากระยะยังปลอดภัย ECU ให้ <strong>ถอยต่อ พร้อมหมุนพวงมาลัยตามแผน</strong></li>
+          </ul>
+          <p style="margin-top:0.55rem; font-size:0.86rem; color:var(--text-soft);">
+            จุดนี้สามารถเอาไปผูกกับ Flow Chart ได้ชัดเจนมากว่า
+            “อ่าน Sensor → ประเมินระยะ → ตัดสินใจ (Decision) → สั่งมอเตอร์/เบรก”
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulation -->
+  <section id="simulation">
+    <div class="section-header">
+      <h2>Simulation ถอยจอดอัตโนมัติ (แบบช่องจอดเอียง)</h2>
+      <span>รูปแบบเดียวกับลานจอดรถจริง เข้าใจง่ายเหมือนภาพตัวอย่าง</span>
+    </div>
+
+    <div class="sim-container">
+      <div class="sim-scene-card">
+        <div class="sim-header">
+          <div class="sim-status">
+            <div class="sim-status-dot"></div>
+            Auto Parking – Ready
+          </div>
+          <span>Top view – live simulation</span>
+        </div>
+
+        <div class="sim-controls">
+          <button id="btnStartSim" class="btn btn-primary btn-sm">เริ่มจำลองการถอยจอด</button>
+          <button id="btnResetSim" class="btn btn-outline btn-sm">Reset</button>
+        </div>
+
+        <div class="sim-scene" id="simScene">
+          <!-- ถนนด้านบน -->
+          <div class="lane-top"></div>
+          <div class="lane-center-line"></div>
+
+          <!-- เส้นแถวช่องจอดด้านล่าง -->
+          <div class="parking-baseline"></div>
+
+          <!-- ช่องจอดเอียง -->
+          <div class="slot-angle slot-a1">
+            <div class="slot-label">รถจอดอยู่แล้ว</div>
+          </div>
+          <div class="slot-angle slot-a2">
+            <div class="slot-label">รถจอดอยู่แล้ว</div>
+          </div>
+          <div class="slot-angle slot-a3 slot-target">
+            <div class="slot-label">ช่องจอดเป้าหมาย</div>
+          </div>
+          <div class="slot-angle slot-a4">
+            <div class="slot-label">รถจอดอยู่แล้ว</div>
+          </div>
+
+          <!-- รถที่จอดอยู่แล้ว -->
+          <div class="other-car other-car-1"></div>
+          <div class="other-car other-car-2"></div>
+          <div class="other-car other-car-3"></div>
+
+          <!-- รถ EV ของเรา -->
+          <div class="ev-car" id="evCar">
+            <div class="ev-window"></div>
+            <div class="ev-sensor-dot ev-s-front"></div>
+            <div class="ev-sensor-dot ev-s-back"></div>
+            <div class="ev-sensor-dot ev-s-left"></div>
+            <div class="ev-sensor-dot ev-s-right"></div>
+          </div>
+        </div>
+
+        <div class="sim-meta">
+          <div class="sim-meta-item">
+            <div class="sim-meta-label">โหมดควบคุม</div>
+            <div class="sim-meta-value" id="simModeLabel">ค้นหาช่องจอด</div>
+          </div>
+          <div class="sim-meta-item">
+            <div class="sim-meta-label">สถานะเซนเซอร์</div>
+            <div class="sim-meta-value" id="simSensorLabel">ด้านข้างกำลังตรวจจับ</div>
+          </div>
+          <div class="sim-meta-item">
+            <div class="sim-meta-label">ความเร็วจำลอง</div>
+            <div class="sim-meta-value" id="simSpeedLabel">ต่ำ &lt; 7 km/h</div>
+          </div>
+        </div>
+        <p class="sim-note">
+          * การจำลองนี้เป็นภาพแทนแนวคิด (Concept Visualization)
+          เพื่อใช้อธิบายการทำงานร่วมกันของ Sensor – ECU – Actuator
+          ในสถานการณ์ลานจอดรถแบบช่องเอียง
+        </p>
+      </div>
+
+      <div class="sim-side">
+        <div class="sim-badge">
+          Simulation นี้แสดงให้เห็นว่า เมื่อรถวิ่งในเลนด้านบน
+          ระบบจะเลือกช่องจอดว่าง (ช่องเอียง) แล้วเลี้ยวลงไปจอดโดยอัตโนมัติ
+        </div>
+
+        <div>
+          <div class="sim-step-label">โฟลว์หลักที่แสดงใน Simulation</div>
+          <div class="sim-flow-chip">
+            <span class="sim-dot"></span>
+            1) วิ่งในเลนค้นหาช่องจอด &nbsp; 2) พบช่องจอดเอียง &nbsp;
+            3) เลี้ยวลงเข้าช่อง &nbsp; 4) จอดนิ่งในตำแหน่ง
+          </div>
+        </div>
+
+        <div class="sim-log" id="simLog">
+          <div class="sim-log-line" data-t="0">[1] เริ่มโหมดถอยจอดอัตโนมัติ – รถเคลื่อนที่ในเลนด้านบนเพื่อค้นหาช่องจอดว่าง</div>
+          <div class="sim-log-line" data-t="1">[2] Sensor ด้านข้างตรวจพบ “ช่องจอดเอียง” ที่เหมาะสมด้านล่าง</div>
+          <div class="sim-log-line" data-t="2">[3] ECU คำนวณเส้นทางการเลี้ยวลงเข้าช่อง (มุม ~30–45 องศา)</div>
+          <div class="sim-log-line" data-t="3">[4] สั่งให้มอเตอร์ขับเคลื่อนเข้าเกียร์ R / ความเร็วต่ำ พร้อมเริ่มเลี้ยว</div>
+          <div class="sim-log-line" data-t="4">[5] รถเลี้ยวลงจากเลนหลัก เข้าหาหน้าช่องจอดเอียง</div>
+          <div class="sim-log-line" data-t="5">[6] Sensor ด้านหลังตรวจระยะกับรถที่จอดอยู่ข้าง ๆ และเส้นแบ่งช่อง</div>
+          <div class="sim-log-line" data-t="6">[7] ECU ปรับมุมเลี้ยวและความเร็ว ให้รถอยู่กลางช่องจอด</div>
+          <div class="sim-log-line" data-t="7">[8] รถหยุดนิ่ง เข้าเกียร์ P และแจ้งผู้ขับว่า “Parking Complete”</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flowchart -->
+  <section id="flowchart">
+    <div class="section-header">
+      <h2>Flow Chart การทำงานของระบบถอยจอดอัตโนมัติ</h2>
+      <span>ฉบับที่สามารถแปลงไปวาดลงกระดาน/รายงานได้ทันที</span>
+    </div>
+
+    <div class="flowchart">
+      <div class="flow-row">
+        <div class="node start">
+          <div class="node-label">Start</div>
+          ผู้ขับเลือกโหมดถอยจอดอัตโนมัติ
+        </div>
+        <div class="arrow">➜</div>
+        <div class="node">
+          <div class="node-label">Process</div>
+          ECU ตรวจสอบความพร้อมของระบบ<br>
+          (ตำแหน่งรถ ความเร็ว สถานะเซนเซอร์)
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="node">
+          <div class="node-label">Process</div>
+          อ่านค่าจากเซนเซอร์ด้านซ้าย/ขวา<br>
+          เพื่อตรวจหาช่องจอดว่าง
+        </div>
+        <div class="arrow">➜</div>
+        <div class="node decision">
+          <div class="node-label">Decision</div>
+          พบช่องจอดว่างหรือไม่ ?
+        </div>
+      </div>
+
+      <div class="branch">
+        <div>
+          <div class="branch-label">ไม่พบช่องจอด</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              ให้รถเคลื่อนที่ช้า ๆ ไปข้างหน้า<br>
+              และวนกลับไปอ่านเซนเซอร์ใหม่
+            </div>
+            <div class="arrow">↺</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="branch-label">พบช่องจอด</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              ECU คำนวณเส้นทางถอยจอด<br>
+              (ระยะด้านข้าง จุดเริ่มเลี้ยว มุมพวงมาลัย)
+            </div>
+            <div class="arrow">➜</div>
+            <div class="node">
+              <div class="node-label">Process</div>
+              สั่งมอเตอร์ขับเคลื่อนเข้าเกียร์ R<br>
+              และเริ่มถอยหลังช้า ๆ
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="node">
+          <div class="node-label">Process</div>
+          ระหว่างถอย ECU อ่านค่าจาก<br>
+          เซนเซอร์ด้านข้าง + ด้านหลังอย่างต่อเนื่อง
+        </div>
+        <div class="arrow">➜</div>
+        <div class="node decision">
+          <div class="node-label">Decision</div>
+          ระยะปลอดภัยหรือไม่ ?
+        </div>
+      </div>
+
+      <div class="branch">
+        <div>
+          <div class="branch-label">ไม่ปลอดภัย</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              ECU สั่งเบรกทันที / ปรับมุมเลี้ยว<br>
+              และประเมินเส้นทางใหม่
+            </div>
+            <div class="arrow">↺</div>
+          </div>
+        </div>
+        <div>
+          <div class="branch-label">ปลอดภัย</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              ถอยต่อ พร้อมหมุนพวงมาลัยตามแผน
+            </div>
+            <div class="arrow">➜</div>
+            <div class="node decision">
+              <div class="node-label">Decision</div>
+              รถเข้าอยู่ในตำแหน่งช่องจอดแล้วหรือไม่ ?
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="branch">
+        <div>
+          <div class="branch-label">ยังไม่อยู่ในตำแหน่ง</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              ปรับความเร็ว/มุมเลี้ยว และวนกลับไปอ่านเซนเซอร์
+            </div>
+            <div class="arrow">↺</div>
+          </div>
+        </div>
+        <div>
+          <div class="branch-label">อยู่ในตำแหน่งแล้ว</div>
+          <div class="flow-row">
+            <div class="node">
+              <div class="node-label">Process</div>
+              หยุดรถ เข้าเกียร์ P / ดึงเบรกมือ<br>
+              แจ้งผู้ขับว่า “จอดสำเร็จ”
+            </div>
+            <div class="arrow">➜</div>
+            <div class="node end">
+              <div class="node-label">End</div>
+              ระบบถอยจอดอัตโนมัติสิ้นสุด
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-box startend"></div> Start / End
+        </div>
+        <div class="legend-item">
+          <div class="legend-box"></div> Process – การอ่านเซนเซอร์/สั่งงานมอเตอร์
+        </div>
+        <div class="legend-item">
+          <div class="legend-box decision"></div> Decision – เงื่อนไข / การตัดสินใจ
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>EV Auto Parking · Student Project Demo Page</span>
+  <span>หน้าเว็บตัวอย่างสำหรับใช้เขียนรายงาน / พรีเซนต์ผลงาน</span>
+</footer>
+
+<script>
+  // ===== Simulation Logic =====
+  const btnStart = document.getElementById('btnStartSim');
+  const btnReset = document.getElementById('btnResetSim');
+  const simScene = document.getElementById('simScene');
+  const simModeLabel = document.getElementById('simModeLabel');
+  const simSensorLabel = document.getElementById('simSensorLabel');
+  const simSpeedLabel = document.getElementById('simSpeedLabel');
+  const simLogLines = Array.from(document.querySelectorAll('#simLog .sim-log-line'));
+  const workflowSteps = Array.from(document.querySelectorAll('#workflow-steps .step'));
+
+  let timers = [];
+  let running = false;
+
+  function clearTimers() {
+    timers.forEach(t => clearTimeout(t));
+    timers = [];
+  }
+
+  function resetSim() {
+    clearTimers();
+    running = false;
+    simScene.classList.remove('running');
+
+    // รีเซ็ต animation รถ (force reflow)
+    const evCar = document.getElementById('evCar');
+    evCar.style.animation = 'none';
+    void evCar.offsetWidth;
+    evCar.style.animation = '';
+
+    simModeLabel.textContent = 'ค้นหาช่องจอด';
+    simSensorLabel.textContent = 'ด้านข้างกำลังตรวจจับ';
+    simSpeedLabel.textContent = 'ต่ำ < 7 km/h';
+    simLogLines.forEach(l => l.classList.remove('active'));
+    workflowSteps.forEach(s => s.classList.remove('active'));
+  }
+
+  function activateLog(index) {
+    simLogLines.forEach((l, i) => {
+      l.classList.toggle('active', i === index);
+    });
+  }
+
+  function startSim() {
+    if (running) return;
+    resetSim();
+    running = true;
+
+    simScene.classList.add('running');
+
+    const stepDur = 1300; // ms
+
+    function at(idx, fn) {
+      const t = setTimeout(fn, idx * stepDur);
+      timers.push(t);
+    }
+
+    // ไฮไลท์ขั้นตอน workflow
+    workflowSteps.forEach((step, i) => {
+      at(i, () => step.classList.add('active'));
+    });
+
+    at(0, () => {
+      simModeLabel.textContent = 'ค้นหาช่องจอด';
+      simSensorLabel.textContent = 'Sensor ด้านข้างทำงาน';
+      activateLog(0);
+    });
+
+    at(1, () => {
+      simModeLabel.textContent = 'พบช่องจอดเอียงด้านล่าง';
+      simSensorLabel.textContent = 'ประมวลผลข้อมูลเซนเซอร์';
+      activateLog(1);
+    });
+
+    at(2, () => {
+      simModeLabel.textContent = 'คำนวณเส้นทางเลี้ยวลง';
+      simSensorLabel.textContent = 'เตรียมหมุนพวงมาลัย';
+      activateLog(2);
+    });
+
+    at(3, () => {
+      simModeLabel.textContent = 'เริ่มถอย/เลี้ยวลงเข้าช่อง';
+      simSensorLabel.textContent = 'ตรวจด้านข้าง + ด้านหลัง';
+      activateLog(3);
+    });
+
+    at(4, () => {
+      simModeLabel.textContent = 'กำลังเลี้ยวเข้าหน้าช่องจอด';
+      simSensorLabel.textContent = 'Sensor ด้านขวาทำงานหนัก';
+      activateLog(4);
+    });
+
+    at(5, () => {
+      simModeLabel.textContent = 'ตรวจระยะกับรถที่จอดอยู่แล้ว';
+      simSensorLabel.textContent = 'ใกล้เส้นแบ่งช่อง';
+      activateLog(5);
+    });
+
+    at(6, () => {
+      simModeLabel.textContent = 'จัดตำแหน่งให้อยู่กลางช่อง';
+      simSensorLabel.textContent = 'ปรับความเร็ว & มุมเลี้ยว';
+      activateLog(6);
+    });
+
+    at(7, () => {
+      simModeLabel.textContent = 'จอดเสร็จสิ้น';
+      simSensorLabel.textContent = 'ระบบพร้อมปิดโหมดอัตโนมัติ';
+      simSpeedLabel.textContent = '0 km/h (หยุดนิ่ง)';
+      activateLog(7);
+      running = false;
+    });
+  }
+
+  btnStart.addEventListener('click', startSim);
+  btnReset.addEventListener('click', resetSim);
+</script>
+
+</body>
+</html>
